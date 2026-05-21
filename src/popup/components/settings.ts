@@ -1,4 +1,4 @@
-import type { Settings } from "../../settings";
+import type { Settings, SiteRule } from "../../settings";
 
 export function setupSettingsTab(
   settings: Settings,
@@ -93,6 +93,162 @@ export function setupSettingsTab(
       { defaultExportFormat: value },
       `デフォルトのエクスポート形式を ${value.toUpperCase()} に変更しました`,
       "エクスポート形式の保存に失敗しました",
+    );
+  });
+
+  setupSiteRules(settings, onUpdate);
+}
+
+function setupSiteRules(
+  settings: Settings,
+  onUpdate: (
+    patch: Partial<Settings>,
+    successMessage: string,
+    failedMessage: string,
+  ) => Promise<void>,
+): void {
+  const input = document.getElementById("site-rule-input") as HTMLInputElement | null;
+  const clearBtn = document.getElementById("site-rule-clear") as HTMLButtonElement | null;
+  const addBtn = document.getElementById("site-rule-add") as HTMLButtonElement | null;
+  const list = document.getElementById("site-rule-list") as HTMLUListElement | null;
+
+  if (!input || !clearBtn || !addBtn || !list) return;
+
+  const siteRules: SiteRule[] = [...(settings.siteRules ?? [])];
+
+  const featureKeys: { key: keyof SiteRule; label: string }[] = [
+    { key: "columnSelectionEnabled", label: "列選択" },
+    { key: "sortingEnabled", label: "並び替え" },
+    { key: "filterEnabled", label: "フィルター" },
+    { key: "exportEnabled", label: "エクスポート" },
+  ];
+
+  function renderList(): void {
+    if (!list) return;
+    list.innerHTML = "";
+    siteRules.forEach((rule, i) => {
+      const li = document.createElement("li");
+      li.className = "border rounded mb-1 p-2";
+
+      const header = document.createElement("div");
+      header.className = "d-flex justify-content-between align-items-center mb-1";
+
+      const patternSpan = document.createElement("span");
+      patternSpan.className = "small fw-semibold text-truncate me-2";
+      patternSpan.textContent = rule.pattern;
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.type = "button";
+      deleteBtn.className = "btn btn-sm btn-link text-muted p-0 site-rule-delete lh-1";
+      deleteBtn.dataset.index = String(i);
+      deleteBtn.setAttribute("aria-label", "削除");
+      deleteBtn.textContent = "×";
+
+      header.appendChild(patternSpan);
+      header.appendChild(deleteBtn);
+
+      const checks = document.createElement("div");
+      checks.className = "d-flex gap-3 flex-wrap";
+
+      for (const { key, label } of featureKeys) {
+        const div = document.createElement("div");
+        div.className = "form-check mb-0";
+
+        const cb = document.createElement("input");
+        cb.className = "form-check-input site-rule-cb";
+        cb.type = "checkbox";
+        cb.id = `sr-${key}-${i}`;
+        cb.dataset.index = String(i);
+        cb.dataset.key = key;
+        cb.checked = rule[key] as boolean;
+
+        const lbl = document.createElement("label");
+        lbl.className = "form-check-label small";
+        lbl.htmlFor = cb.id;
+        lbl.textContent = label;
+
+        div.appendChild(cb);
+        div.appendChild(lbl);
+        checks.appendChild(div);
+      }
+
+      li.appendChild(header);
+      li.appendChild(checks);
+      list.appendChild(li);
+    });
+  }
+
+  renderList();
+
+  input.addEventListener("input", () => {
+    if (clearBtn) clearBtn.style.display = input.value ? "" : "none";
+  });
+
+  clearBtn.addEventListener("click", () => {
+    input.value = "";
+    clearBtn.style.display = "none";
+    input.focus();
+  });
+
+  function addRule(): void {
+    const pattern = input?.value.trim();
+    if (!pattern) return;
+    if (siteRules.some((r) => r.pattern === pattern)) {
+      input?.focus();
+      return;
+    }
+    siteRules.push({
+      pattern,
+      columnSelectionEnabled: false,
+      sortingEnabled: false,
+      filterEnabled: false,
+      exportEnabled: false,
+    });
+    if (input) input.value = "";
+    if (clearBtn) clearBtn.style.display = "none";
+    renderList();
+    onUpdate(
+      { siteRules: [...siteRules] },
+      `サイト「${pattern}」を追加しました`,
+      "サイトの追加に失敗しました",
+    );
+  }
+
+  addBtn.addEventListener("click", addRule);
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") addRule();
+  });
+
+  list.addEventListener("click", (e) => {
+    const btn = (e.target as HTMLElement).closest(".site-rule-delete") as HTMLElement | null;
+    if (!btn) return;
+    const index = Number(btn.dataset.index);
+    const removed = siteRules[index];
+    siteRules.splice(index, 1);
+    renderList();
+    onUpdate(
+      { siteRules: [...siteRules] },
+      `サイト「${removed.pattern}」を削除しました`,
+      "サイトの削除に失敗しました",
+    );
+  });
+
+  list.addEventListener("change", (e) => {
+    const cb = (e.target as HTMLElement).closest(".site-rule-cb") as HTMLInputElement | null;
+    if (!cb) return;
+    const index = Number(cb.dataset.index);
+    const key = cb.dataset.key as keyof SiteRule;
+    (siteRules[index] as Record<string, unknown>)[key] = cb.checked;
+    const labelMap: Partial<Record<keyof SiteRule, string>> = {
+      columnSelectionEnabled: "列選択",
+      sortingEnabled: "並び替え",
+      filterEnabled: "フィルター",
+      exportEnabled: "エクスポート",
+    };
+    onUpdate(
+      { siteRules: [...siteRules] },
+      `${siteRules[index].pattern} の${labelMap[key]}を${cb.checked ? "有効" : "無効"}にしました`,
+      "サイト設定の保存に失敗しました",
     );
   });
 }

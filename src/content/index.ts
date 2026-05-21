@@ -4,6 +4,30 @@ import { getSettings, isEnabled } from "../utils/storage";
 import { TableManager } from "./table-manager";
 import "./styles.css";
 
+/**
+ * ワイルドカードパターン（* のみ対応）をホスト名に対してマッチングする
+ */
+function matchesPattern(pattern: string, hostname: string): boolean {
+  const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*");
+  return new RegExp(`^${escaped}$`, "i").test(hostname);
+}
+
+/**
+ * サイト別設定ルールを考慮した実効設定を返す
+ */
+function getEffectiveSettings(settings: Settings): Settings {
+  const hostname = location.hostname;
+  const rule = settings.siteRules?.find((r) => matchesPattern(r.pattern, hostname));
+  if (!rule) return settings;
+  return {
+    ...settings,
+    columnSelectionEnabled: rule.columnSelectionEnabled,
+    sortingEnabled: rule.sortingEnabled,
+    filterEnabled: rule.filterEnabled,
+    exportEnabled: rule.exportEnabled,
+  };
+}
+
 // 稼働中の TableManager インスタンスを保持するマップ
 const tableManagers = new Map<HTMLTableElement, TableManager>();
 
@@ -52,7 +76,11 @@ function scanAndInitTables(): void {
 
     try {
       if (currentSettings) {
-        const manager = new TableManager(table, currentSettings, currentEnabled);
+        const manager = new TableManager(
+          table,
+          getEffectiveSettings(currentSettings),
+          currentEnabled,
+        );
         tableManagers.set(table, manager);
       }
     } catch (err) {
@@ -93,7 +121,7 @@ async function syncSettings(): Promise<void> {
 
     // すでに管理しているテーブルの設定を更新
     for (const manager of tableManagers.values()) {
-      manager.applySettings(currentSettings, currentEnabled);
+      manager.applySettings(getEffectiveSettings(currentSettings), currentEnabled);
     }
 
     // 新規追加されたテーブルを検知するためスキャン
