@@ -32,20 +32,31 @@ export class TableSorter {
 
     this.table.removeEventListener("click", this.clickListener);
 
-    // インジケータとスタイルのクリーンアップ
-    const indicators = this.table.querySelectorAll(".to-sort-indicator");
-    for (const ind of Array.from(indicators)) {
-      ind.textContent = "";
-    }
-
-    const headers = this.table.querySelectorAll(".to-sortable-header");
-    for (const h of Array.from(headers)) {
-      h.classList.remove("to-sortable-active");
-      (h as HTMLElement).style.pointerEvents = "none";
-    }
-
     this.currentSortCol = null;
     this.currentSortDir = null;
+
+    // ヘッダーのDOM構造を元に戻す
+    this.restoreHeaders();
+  }
+
+  /**
+   * prepareHeaders() で挿入した to-header-container を除去し、元のDOM構造に復元する
+   */
+  private restoreHeaders(): void {
+    const ths = this.table.querySelectorAll("th");
+    for (const th of Array.from(ths)) {
+      const container = th.querySelector(".to-header-container");
+      if (!container) continue;
+
+      const sortableHeader = container.querySelector(".to-sortable-header");
+      if (sortableHeader) {
+        while (sortableHeader.firstChild) {
+          th.insertBefore(sortableHeader.firstChild, container);
+        }
+      }
+
+      container.parentNode?.removeChild(container);
+    }
   }
 
   /**
