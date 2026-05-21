@@ -1,3 +1,11 @@
+export type SiteRule = {
+  pattern: string;
+  columnSelectionEnabled: boolean;
+  sortingEnabled: boolean;
+  filterEnabled: boolean;
+  exportEnabled: boolean;
+};
+
 export type Settings = {
   columnSelectionEnabled: boolean;
   sortingEnabled: boolean;
@@ -5,6 +13,7 @@ export type Settings = {
   exportEnabled: boolean;
   defaultExportFileName: string;
   defaultExportFormat: "csv" | "tsv";
+  siteRules: SiteRule[];
 };
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -14,4 +23,20 @@ export const DEFAULT_SETTINGS: Settings = {
   exportEnabled: true,
   defaultExportFileName: "table-data",
   defaultExportFormat: "csv",
+  siteRules: [
+    {
+      pattern: "localhost",
+      columnSelectionEnabled: false,
+      sortingEnabled: false,
+      filterEnabled: false,
+      exportEnabled: false,
+    },
+    {
+      pattern: "192.168.0.*",
+      columnSelectionEnabled: false,
+      sortingEnabled: false,
+      filterEnabled: false,
+      exportEnabled: false,
+    },
+  ],
 };
