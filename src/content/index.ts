@@ -5,19 +5,20 @@ import { TableManager } from "./table-manager";
 import "./styles.css";
 
 /**
- * ワイルドカードパターン（* のみ対応）をホスト名に対してマッチングする
+ * ワイルドカードパターン（* のみ対応）で URL またはホスト名にマッチングする
+ * パターンに :// が含まれる場合は location.href、含まれない場合は location.hostname と比較する
  */
-function matchesPattern(pattern: string, hostname: string): boolean {
+function matchesPattern(pattern: string): boolean {
+  const target = pattern.includes("://") ? location.href : location.hostname;
   const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*");
-  return new RegExp(`^${escaped}$`, "i").test(hostname);
+  return new RegExp(`^${escaped}$`, "i").test(target);
 }
 
 /**
  * サイト別設定ルールを考慮した実効設定を返す
  */
 function getEffectiveSettings(settings: Settings): Settings {
-  const hostname = location.hostname;
-  const rule = settings.siteRules?.find((r) => matchesPattern(r.pattern, hostname));
+  const rule = settings.siteRules?.find((r) => matchesPattern(r.pattern));
   if (!rule) return settings;
   return {
     ...settings,
