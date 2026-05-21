@@ -1,0 +1,265 @@
+/* テーブル操作拡張機能 専用スタイル */
+
+.to-table-wrapper {
+  position: relative !important;
+}
+
+/* 選択された列のセルハイライト */
+.to-selected-cell {
+  background-color: rgba(13, 110, 253, 0.15) !important;
+  outline: 1px dashed rgba(13, 110, 253, 0.35) !important;
+}
+
+/* テーブルの列選択モード時のテキスト選択制限 */
+.to-column-selecting th,
+.to-column-selecting td {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+.to-column-selecting th.to-selected-cell,
+.to-column-selecting td.to-selected-cell {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+/* ソート可能なヘッダーのリンク表現 */
+.to-sortable-header {
+  cursor: pointer !important;
+  text-decoration: underline dotted !important;
+  text-underline-offset: 4px;
+  display: inline-block;
+  user-select: none;
+}
+.to-sortable-header:hover {
+  text-decoration: underline solid !important;
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* ソートインジケータ */
+.to-sort-indicator {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 10px;
+  width: 10px;
+  height: 10px;
+  line-height: 10px;
+  vertical-align: middle;
+  color: #6c757d;
+  user-select: none;
+}
+
+/* ヘッダー内部のコンテナ */
+.to-header-container {
+  display: inline-flex !important;
+  align-items: center !important;
+  vertical-align: middle !important;
+  max-width: 100% !important;
+}
+
+/* フィルターボタン（ホバー時に出現） */
+.to-filter-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 1px !important;
+  margin-left: 4px !important;
+  cursor: pointer !important;
+  opacity: 0;
+  transition:
+    opacity 0.15s ease,
+    background-color 0.15s ease,
+    color 0.15s ease !important;
+  border-radius: 3px !important;
+  color: #6c757d !important;
+  width: 16px !important;
+  height: 16px !important;
+  vertical-align: middle !important;
+  outline: none !important;
+}
+
+/* 親th/tdホバーでフィルターボタンを表示 */
+th:hover .to-filter-button,
+td:hover .to-filter-button {
+  opacity: 0.8;
+}
+
+.to-filter-button:hover {
+  opacity: 1 !important;
+  background-color: rgba(0, 0, 0, 0.08) !important;
+  color: #212529 !important;
+}
+
+/* フィルター適用中またはポップオーバー展開中 */
+.to-filter-button.to-filter-active {
+  opacity: 1 !important;
+  color: #0d6efd !important;
+}
+.to-filter-button.to-filter-open {
+  opacity: 1 !important;
+  background-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* テーブル右端のエクスポートボタン（ホバーで出現） */
+.to-export-button {
+  position: absolute !important;
+  top: 6px !important;
+  right: 6px !important;
+  z-index: 999 !important;
+  width: 22px !important;
+  height: 22px !important;
+  border-radius: 4px !important;
+  border: 1px solid #dee2e6 !important;
+  background-color: #ffffff !important;
+  color: #495057 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  opacity: 0;
+  transition:
+    opacity 0.15s ease,
+    background-color 0.15s ease,
+    color 0.15s ease !important;
+  padding: 0 !important;
+  outline: none !important;
+}
+
+.to-table-wrapper:hover .to-export-button {
+  opacity: 0.7;
+}
+.to-table-wrapper .to-export-button:hover {
+  opacity: 1 !important;
+  background-color: #f8f9fa !important;
+  color: #0d6efd !important;
+  border-color: #adb5bd !important;
+}
+.to-export-button.to-popover-open {
+  opacity: 1 !important;
+  background-color: #e9ecef !important;
+  color: #0d6efd !important;
+}
+
+/* ポップオーバー共通スタイル（body直下アペンド） */
+.to-popover {
+  position: absolute !important;
+  z-index: 999999 !important;
+  background-color: #ffffff !important;
+  border: 1px solid #dee2e6 !important;
+  border-radius: 6px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  padding: 8px !important;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  font-size: 12px !important;
+  color: #212529 !important;
+  min-width: 180px !important;
+  max-width: 280px !important;
+  box-sizing: border-box !important;
+  text-align: left !important;
+}
+
+/* ポップオーバーの入力項目 */
+.to-popover label {
+  font-weight: 600 !important;
+  margin-bottom: 3px !important;
+  display: block !important;
+  color: #495057 !important;
+}
+.to-popover input[type="text"] {
+  width: 100% !important;
+  height: 24px !important;
+  padding: 2px 6px !important;
+  font-size: 11px !important;
+  border: 1px solid #ced4da !important;
+  border-radius: 4px !important;
+  margin-bottom: 6px !important;
+  box-sizing: border-box !important;
+  background-color: #ffffff !important;
+  color: #212529 !important;
+}
+.to-popover select {
+  width: 100% !important;
+  height: 24px !important;
+  padding: 2px 4px !important;
+  font-size: 11px !important;
+  border: 1px solid #ced4da !important;
+  border-radius: 4px !important;
+  margin-bottom: 6px !important;
+  box-sizing: border-box !important;
+  background-color: #ffffff !important;
+  color: #212529 !important;
+}
+
+/* チェックボックス付き値リスト */
+.to-popover-list {
+  max-height: 120px !important;
+  overflow-y: auto !important;
+  margin: 6px 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+  border-top: 1px solid #dee2e6 !important;
+  border-bottom: 1px solid #dee2e6 !important;
+}
+.to-popover-item {
+  display: flex !important;
+  align-items: center !important;
+  padding: 3px 2px !important;
+  cursor: pointer !important;
+  user-select: none !important;
+}
+.to-popover-item input[type="checkbox"] {
+  margin: 0 6px 0 0 !important;
+  cursor: pointer !important;
+  width: 13px !important;
+  height: 13px !important;
+}
+.to-popover-item-label {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  flex-grow: 1 !important;
+  color: #333333 !important;
+}
+
+/* ポップオーバーのフッター操作ボタン */
+.to-popover-footer {
+  display: flex !important;
+  justify-content: space-between !important;
+  gap: 6px !important;
+  margin-top: 6px !important;
+}
+
+.to-btn {
+  padding: 3px 8px !important;
+  font-size: 11px !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  border: 1px solid #dee2e6 !important;
+  background-color: #f8f9fa !important;
+  color: #212529 !important;
+  transition: background-color 0.1s ease !important;
+  font-weight: 500 !important;
+  outline: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.to-btn:hover {
+  background-color: #e9ecef !important;
+}
+.to-btn-primary {
+  background-color: #0d6efd !important;
+  color: #ffffff !important;
+  border-color: #0d6efd !important;
+}
+.to-btn-primary:hover {
+  background-color: #0b5ed7 !important;
+}
+
+/* フィルターによる非表示行 */
+.to-row-filtered {
+  display: none !important;
+}
