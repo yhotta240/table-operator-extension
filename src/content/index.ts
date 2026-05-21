@@ -6,10 +6,13 @@ import "./styles.css";
 
 /**
  * ワイルドカードパターン（* のみ対応）で URL またはホスト名にマッチングする
- * パターンに :// が含まれる場合は location.href、含まれない場合は location.hostname と比較する
+ *
+ * - `://` を含むパターンは `location.origin + location.pathname` と比較する
+ *   - クエリパラメータやハッシュを除外して安定したURL比較を行うため
+ * - それ以外のパターンは `location.hostname` と比較する
  */
 function matchesPattern(pattern: string): boolean {
-  const target = pattern.includes("://") ? location.href : location.hostname;
+  const target = pattern.includes("://") ? location.origin + location.pathname : location.hostname;
   const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*");
   return new RegExp(`^${escaped}$`, "i").test(target);
 }
