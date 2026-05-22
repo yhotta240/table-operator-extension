@@ -22,7 +22,6 @@ export class TableFilter {
     if (this.active) return;
     this.active = true;
 
-    this.prepareHeaders();
     this.injectFilterButtons();
     document.addEventListener("click", this.clickOutsideListener);
     document.addEventListener("keydown", this.escListener);
@@ -38,33 +37,6 @@ export class TableFilter {
     this.removePopover();
     this.removeFilterButtons();
     this.clearAllFilters();
-  }
-
-  /**
-   * ヘッダーセルのDOM構造を準備（すでにSorter側等で作成されている場合はスキップ）
-   */
-  private prepareHeaders(): void {
-    const ths = this.table.querySelectorAll("th");
-    for (const th of Array.from(ths)) {
-      if (th.querySelector(".to-header-container")) continue;
-
-      const container = document.createElement("div");
-      container.className = "to-header-container";
-
-      const sortableHeader = document.createElement("span");
-      sortableHeader.className = "to-sortable-header";
-
-      while (th.firstChild) {
-        sortableHeader.appendChild(th.firstChild);
-      }
-
-      const indicator = document.createElement("span");
-      indicator.className = "to-sort-indicator";
-
-      container.appendChild(sortableHeader);
-      container.appendChild(indicator);
-      th.appendChild(container);
-    }
   }
 
   /**
