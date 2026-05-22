@@ -15,7 +15,6 @@ export class TableSorter {
     if (this.active) return;
     this.active = true;
 
-    this.prepareHeaders();
     this.table.addEventListener("click", this.clickListener);
 
     // ソート可能表示の有効化
@@ -31,60 +30,20 @@ export class TableSorter {
     this.active = false;
 
     this.table.removeEventListener("click", this.clickListener);
-
     this.currentSortCol = null;
     this.currentSortDir = null;
 
-    // ヘッダーのDOM構造を元に戻す
-    this.restoreHeaders();
-  }
-
-  /**
-   * prepareHeaders() で挿入した to-header-container を除去し、元のDOM構造に復元する
-   */
-  private restoreHeaders(): void {
-    const ths = this.table.querySelectorAll("th");
-    for (const th of Array.from(ths)) {
-      const container = th.querySelector(".to-header-container");
-      if (!container) continue;
-
-      const sortableHeader = container.querySelector(".to-sortable-header");
-      if (sortableHeader) {
-        while (sortableHeader.firstChild) {
-          th.insertBefore(sortableHeader.firstChild, container);
-        }
-      }
-
-      container.parentNode?.removeChild(container);
+    // ソート可能表示の無効化
+    const headers = this.table.querySelectorAll(".to-sortable-header");
+    for (const h of Array.from(headers)) {
+      h.classList.remove("to-sortable-active");
+      (h as HTMLElement).style.pointerEvents = "";
     }
-  }
 
-  /**
-   * ヘッダーセルのDOM構造を準備（thの中身をラッパーで包み、インジケータ領域を作成）
-   */
-  private prepareHeaders(): void {
-    const ths = this.table.querySelectorAll("th");
-    for (const th of Array.from(ths)) {
-      // すでに初期化済みの場合はスキップ
-      if (th.querySelector(".to-header-container")) continue;
-
-      const container = document.createElement("div");
-      container.className = "to-header-container";
-
-      const sortableHeader = document.createElement("span");
-      sortableHeader.className = "to-sortable-header";
-
-      // 既存のthの全子要素をsortableHeaderに移動
-      while (th.firstChild) {
-        sortableHeader.appendChild(th.firstChild);
-      }
-
-      const indicator = document.createElement("span");
-      indicator.className = "to-sort-indicator";
-
-      container.appendChild(sortableHeader);
-      container.appendChild(indicator);
-      th.appendChild(container);
+    // インジケータのリセット
+    const indicators = this.table.querySelectorAll(".to-sort-indicator");
+    for (const ind of Array.from(indicators)) {
+      ind.textContent = "";
     }
   }
 

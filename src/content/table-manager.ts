@@ -60,6 +60,11 @@ export class TableManager {
     const isFil = enabled && settings.filterEnabled;
     const isExp = enabled && settings.exportEnabled;
 
+    // ソートまたはフィルターが有効な場合はヘッダーDOM構造を準備する
+    if (isSort || isFil) {
+      this.prepareHeaders();
+    }
+
     // 各サブモジュールの有効/無効状態を更新
     if (this.selector) {
       if (isSel) this.selector.enable();
@@ -74,6 +79,11 @@ export class TableManager {
     if (this.filter) {
       if (isFil) this.filter.enable();
       else this.filter.disable();
+    }
+
+    // ソートとフィルターが両方オフの場合のみ to-header-container を除去する
+    if (!isSort && !isFil) {
+      this.restoreHeaders();
     }
 
     if (this.exporter) {
@@ -95,6 +105,7 @@ export class TableManager {
     this.sorter?.disable();
     this.filter?.disable();
     this.exporter?.disable();
+    this.restoreHeaders();
 
     this.selector = null;
     this.sorter = null;
@@ -110,5 +121,54 @@ export class TableManager {
     }
 
     delete this.table.dataset.toInitialized;
+  }
+
+  /**
+   * ヘッダーセルのDOM構造を準備（thの中身をラッパーで包み、インジケータ領域を作成）
+   * ソートまたはフィルターが有効な場合に呼び出す。両方有効な場合でも1回だけ呼び出せばOK。
+   */
+  private prepareHeaders(): void {
+    const ths = this.table.querySelectorAll("th");
+    for (const th of Array.from(ths)) {
+      if (th.querySelector(".to-header-container")) continue;
+
+      const container = document.createElement("div");
+      container.className = "to-header-container";
+
+      const sortableHeader = document.createElement("span");
+      sortableHeader.className = "to-sortable-header";
+
+      while (th.firstChild) {
+        sortableHeader.appendChild(th.firstChild);
+      }
+
+      const indicator = document.createElement("span");
+      indicator.className = "to-sort-indicator";
+
+      container.appendChild(sortableHeader);
+      container.appendChild(indicator);
+      th.appendChild(container);
+    }
+  }
+
+  /**
+   * prepareHeaders() で挿入した to-header-container を除去し、元のDOM構造に復元する
+   * ソートとフィルターが両方オフになったタイミングで呼び出す
+   */
+  private restoreHeaders(): void {
+    const ths = this.table.querySelectorAll("th");
+    for (const th of Array.from(ths)) {
+      const container = th.querySelector(".to-header-container");
+      if (!container) continue;
+
+      const sortableHeader = container.querySelector(".to-sortable-header");
+      if (sortableHeader) {
+        while (sortableHeader.firstChild) {
+          th.insertBefore(sortableHeader.firstChild, container);
+        }
+      }
+
+      container.parentNode?.removeChild(container);
+    }
   }
 }
