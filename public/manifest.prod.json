@@ -3,7 +3,7 @@
   "name": "Table Operator",
   "short_name": "Table Operator",
   "version": "0.2.0",
-  "description": "",
+  "description": "Web ページ上の表を並び替え・フィルター・CSV出力できるようにします",
   "icons": {
     "48": "icons/icon.png"
   },
