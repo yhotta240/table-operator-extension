@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Table Operator",
   "short_name": "Table Operator",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "",
   "icons": {
     "48": "icons/icon.png"
