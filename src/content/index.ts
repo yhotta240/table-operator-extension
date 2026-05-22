@@ -12,7 +12,17 @@ import "./styles.css";
  * - それ以外のパターンは `location.hostname` と比較する
  */
 function matchesPattern(pattern: string): boolean {
-  const target = pattern.includes("://") ? location.origin + location.pathname : location.hostname;
+  let target: string;
+  if (pattern.includes("://")) {
+    try {
+      const hasPath = new URL(pattern.replace(/\*/g, "x")).pathname !== "/";
+      target = hasPath ? location.origin + location.pathname : location.origin;
+    } catch {
+      target = location.origin + location.pathname;
+    }
+  } else {
+    target = location.hostname;
+  }
   const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*");
   return new RegExp(`^${escaped}$`, "i").test(target);
 }
