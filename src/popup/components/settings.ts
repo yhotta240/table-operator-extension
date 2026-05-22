@@ -100,15 +100,24 @@ export function setupSettingsTab(
 }
 
 function matchesPatternForUrl(pattern: string, url: string): boolean {
-  let target: string;
   try {
     const u = new URL(url);
-    target = pattern.includes("://") ? u.origin + u.pathname : u.hostname;
+    let target: string;
+    if (pattern.includes("://")) {
+      try {
+        const hasPath = new URL(pattern.replace(/\*/g, "x")).pathname !== "/";
+        target = hasPath ? u.origin + u.pathname : u.origin;
+      } catch {
+        target = u.origin + u.pathname;
+      }
+    } else {
+      target = u.hostname;
+    }
+    const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*");
+    return new RegExp(`^${escaped}$`, "i").test(target);
   } catch {
-    target = url;
+    return false;
   }
-  const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*");
-  return new RegExp(`^${escaped}$`, "i").test(target);
 }
 
 function validateSiteRulePattern(pattern: string): string | null {
