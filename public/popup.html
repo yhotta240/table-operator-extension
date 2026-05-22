@@ -111,68 +111,78 @@
     <!-- 設定 -->
     <div class="tab-pane fade mt-3 mx-2 show active" id="settings" role="tabpanel" style="margin-bottom: 180px;"
       aria-labelledby="settings-tab">
-      <h5 class="">設定</h5>
-      <p class="text-muted small">拡張機能の各動作およびエクスポートに関する設定を行います．変更は表示中のページへ即時に反映されます．</p>
+      <p class="text-muted small mb-2">変更は表示中のページへ即時に反映されます．</p>
 
-      <ul class="list-group list-group-flush">
-        <li class="list-group-item px-1">
-          <div class="form-check form-switch d-flex justify-content-between align-items-center ps-0">
-            <label class="form-check-label" for="setting-column-selection">列選択機能（Shift + クリック）</label>
-            <input class="form-check-input" type="checkbox" id="setting-column-selection">
-          </div>
-        </li>
-        <li class="list-group-item px-1">
-          <div class="form-check form-switch d-flex justify-content-between align-items-center ps-0">
-            <label class="form-check-label" for="setting-sorting">並び替え機能（項目名クリック）</label>
-            <input class="form-check-input" type="checkbox" id="setting-sorting">
-          </div>
-        </li>
-        <li class="list-group-item px-1">
-          <div class="form-check form-switch d-flex justify-content-between align-items-center ps-0">
-            <label class="form-check-label" for="setting-filter">フィルター機能（ホバー時にアイコン表示）</label>
-            <input class="form-check-input" type="checkbox" id="setting-filter">
-          </div>
-        </li>
-        <li class="list-group-item px-1">
-          <div class="form-check form-switch d-flex justify-content-between align-items-center ps-0">
-            <label class="form-check-label" for="setting-export">エクスポート機能（テーブル右端にアイコン表示）</label>
-            <input class="form-check-input" type="checkbox" id="setting-export">
-          </div>
-        </li>
-        <li class="list-group-item px-1">
-          <div class="mt-2 mb-2">
-            <label for="setting-export-filename" class="form-label d-flex mb-1">デフォルトのエクスポートファイル名</label>
-            <input type="text" class="form-control form-control-sm" id="setting-export-filename"
-              placeholder="table-data">
-          </div>
-        </li>
-        <li class="list-group-item px-1 mb-3">
-          <div class="mb-2">
-            <label for="setting-export-format" class="form-label d-flex mb-1">デフォルトのエクスポート形式</label>
-            <select class="form-select form-select-sm" id="setting-export-format">
-              <option value="csv">CSV形式 (.csv)</option>
-              <option value="tsv">TSV形式 (.txt)</option>
-            </select>
-          </div>
-        </li>
-        <li class="list-group-item px-1 mb-3">
-          <div class="mt-1 mb-1">
-            <label class="form-label mb-1">サイト別設定</label>
-            <p class="text-muted small mb-2">サイトごとに機能の有効・無効を個別に上書き設定します。</p>
-            <div class="input-group input-group-sm mb-2">
-              <div class="flex-grow-1 position-relative">
-                <input type="text" class="form-control form-control-sm pe-4" id="site-rule-input"
-                  placeholder="例: example.com, 192.168.1.*">
-                <button type="button"
-                  class="btn btn-sm position-absolute top-50 end-0 translate-middle-y px-2 py-0 border-0 text-muted lh-1"
-                  id="site-rule-clear" style="display:none;" aria-label="クリア">&times;</button>
-              </div>
-              <button type="button" class="btn btn-sm btn-outline-secondary" id="site-rule-add">追加</button>
+      <div class="accordion" id="settings-accordion">
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button p-2 small" type="button"
+              data-bs-toggle="collapse" data-bs-target="#acc-features"
+              aria-expanded="true" aria-controls="acc-features">
+              機能設定
+            </button>
+          </h2>
+          <div id="acc-features" class="accordion-collapse collapse show" data-bs-parent="#settings-accordion">
+            <div class="accordion-body py-0 px-0">
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item px-3 py-2">
+                  <div class="form-check form-switch d-flex justify-content-between align-items-center ps-0">
+                    <label class="form-check-label small" for="setting-column-selection">列選択機能</label>
+                    <input class="form-check-input" type="checkbox" id="setting-column-selection">
+                  </div>
+                </li>
+                <li class="list-group-item px-3 py-2">
+                  <div class="form-check form-switch d-flex justify-content-between align-items-center ps-0">
+                    <label class="form-check-label small" for="setting-sorting">並び替え機能</label>
+                    <input class="form-check-input" type="checkbox" id="setting-sorting">
+                  </div>
+                </li>
+                <li class="list-group-item px-3 py-2">
+                  <div class="form-check form-switch d-flex justify-content-between align-items-center ps-0">
+                    <label class="form-check-label small" for="setting-filter">フィルター機能</label>
+                    <input class="form-check-input" type="checkbox" id="setting-filter">
+                  </div>
+                </li>
+                <li class="list-group-item px-3 py-2 rounded-bottom">
+                  <div class="form-check form-switch d-flex justify-content-between align-items-center ps-0 mb-2">
+                    <label class="form-check-label small" for="setting-export">エクスポート機能</label>
+                    <input class="form-check-input" type="checkbox" id="setting-export">
+                  </div>
+                  <div class="mb-2">
+                    <label for="setting-export-filename" class="form-label small mb-1">デフォルトのファイル名</label>
+                    <input type="text" class="form-control form-control-sm" id="setting-export-filename"
+                      placeholder="table-data">
+                  </div>
+                  <div>
+                    <label for="setting-export-format" class="form-label small mb-1">デフォルトの形式</label>
+                    <select class="form-select form-select-sm" id="setting-export-format">
+                      <option value="csv">CSV形式 (.csv)</option>
+                      <option value="tsv">TSV形式 (.txt)</option>
+                    </select>
+                  </div>
+                </li>
+              </ul>
             </div>
-            <ul class="list-unstyled mb-0" id="site-rule-list"></ul>
           </div>
-        </li>
-      </ul>
+        </div>
+      </div>
+
+      <!-- サイト別設定 -->
+      <div class="mt-3">
+        <label class="form-label mb-1">サイト別設定</label>
+        <p class="text-muted small mb-2">サイトごとに機能の有効・無効を個別に上書き設定します。</p>
+        <div class="input-group input-group-sm mb-2">
+          <div class="flex-grow-1 position-relative">
+            <input type="text" class="form-control form-control-sm pe-4" id="site-rule-input"
+              placeholder="例: example.com, 192.168.1.*">
+            <button type="button"
+              class="btn btn-sm position-absolute top-50 end-0 translate-middle-y px-2 py-0 border-0 text-muted lh-1"
+              id="site-rule-clear" style="display:none;" aria-label="クリア">&times;</button>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="site-rule-add">追加</button>
+        </div>
+        <ul class="list-group mb-0" id="site-rule-list"></ul>
+      </div>
     </div>
 
     <!-- ドキュメント -->
