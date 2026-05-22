@@ -128,7 +128,7 @@ function setupSiteRules(
     list.innerHTML = "";
     siteRules.forEach((rule, i) => {
       const li = document.createElement("li");
-      li.className = "border rounded mb-1 p-2";
+      li.className = "list-group-item px-3 py-2";
 
       const header = document.createElement("div");
       header.className = "d-flex justify-content-between align-items-center mb-1";
@@ -139,7 +139,7 @@ function setupSiteRules(
 
       const deleteBtn = document.createElement("button");
       deleteBtn.type = "button";
-      deleteBtn.className = "btn btn-sm btn-link text-muted p-0 site-rule-delete lh-1";
+      deleteBtn.className = "btn btn-sm text-muted p-0 site-rule-delete lh-1";
       deleteBtn.dataset.index = String(i);
       deleteBtn.setAttribute("aria-label", "削除");
       deleteBtn.textContent = "×";
