@@ -111,6 +111,14 @@ function matchesPatternForUrl(pattern: string, url: string): boolean {
   return new RegExp(`^${escaped}$`, "i").test(target);
 }
 
+function validateSiteRulePattern(pattern: string): string | null {
+  if (/\s/.test(pattern)) return "スペースは使用できません";
+  if (!/^https?:\/\/.+/.test(pattern)) {
+    return "http:// または https:// から始めてください";
+  }
+  return null;
+}
+
 function setupSiteRules(
   settings: Settings,
   onUpdate: (
@@ -123,8 +131,21 @@ function setupSiteRules(
   const clearBtn = document.getElementById("site-rule-clear") as HTMLButtonElement | null;
   const addBtn = document.getElementById("site-rule-add") as HTMLButtonElement | null;
   const list = document.getElementById("site-rule-list") as HTMLUListElement | null;
+  const errorDiv = document.getElementById("site-rule-error") as HTMLDivElement | null;
 
   if (!input || !clearBtn || !addBtn || !list) return;
+
+  function showError(message: string): void {
+    if (!errorDiv) return;
+    errorDiv.textContent = message;
+    errorDiv.style.display = "";
+  }
+
+  function clearError(): void {
+    if (!errorDiv) return;
+    errorDiv.textContent = "";
+    errorDiv.style.display = "none";
+  }
 
   const siteRules: SiteRule[] = [...(settings.siteRules ?? [])];
   let currentTabUrl: string | null = null;
@@ -218,21 +239,31 @@ function setupSiteRules(
 
   input.addEventListener("input", () => {
     if (clearBtn) clearBtn.style.display = input.value ? "" : "none";
+    clearError();
   });
 
   clearBtn.addEventListener("click", () => {
     input.value = "";
     clearBtn.style.display = "none";
+    clearError();
     input.focus();
   });
 
   function addRule(): void {
     const pattern = input?.value.trim();
     if (!pattern) return;
-    if (siteRules.some((r) => r.pattern === pattern)) {
+    const validationError = validateSiteRulePattern(pattern);
+    if (validationError) {
+      showError(validationError);
       input?.focus();
       return;
     }
+    if (siteRules.some((r) => r.pattern === pattern)) {
+      showError("同じパターンがすでに登録されています");
+      input?.focus();
+      return;
+    }
+    clearError();
     siteRules.push({
       pattern,
       columnSelectionEnabled: false,
