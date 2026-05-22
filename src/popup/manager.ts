@@ -26,16 +26,12 @@ export class PopupManager {
   private manifestData: chrome.runtime.Manifest;
   private manifestMetadata: ManifestMetadata;
   private enabledElement: HTMLInputElement | null;
-  // private notificationToggle: HTMLInputElement | null;
-  // private fontSizeRange: HTMLInputElement | null;
 
   constructor() {
     this.panel = new PopupPanel();
     this.manifestData = chrome.runtime.getManifest();
     this.manifestMetadata = meta || {};
     this.enabledElement = document.getElementById("enabled") as HTMLInputElement | null;
-    // this.notificationToggle = document.getElementById('notification-toggle') as HTMLInputElement | null;
-    // this.fontSizeRange = document.getElementById('font-size') as HTMLInputElement | null;
 
     this.initialize();
   }
@@ -61,9 +57,6 @@ export class PopupManager {
       this.settings = await getSettings();
       this.enabled = await isEnabled();
       if (this.enabledElement) this.enabledElement.checked = this.enabled;
-      await this.showLog(
-        `${this.manifestData.short_name} は現在 ${this.enabled ? "有効" : "無効"} です`,
-      );
     } catch (err) {
       console.error("error", err);
       await this.showLog("設定の読み込みに失敗しました", "error", err);

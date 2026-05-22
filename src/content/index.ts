@@ -1,5 +1,5 @@
 import type { Settings } from "../settings";
-import { logInfo, logWarn } from "../utils/logger";
+import { logWarn } from "../utils/logger";
 import { getSettings, isEnabled } from "../utils/storage";
 import { TableManager } from "./table-manager";
 import "./styles.css";
@@ -110,11 +110,6 @@ async function syncSettings(): Promise<void> {
   try {
     currentEnabled = await isEnabled();
     currentSettings = await getSettings();
-
-    logInfo(
-      `設定を同期しました: 有効=${currentEnabled}, 列選択=${currentSettings.columnSelectionEnabled}, ソート=${currentSettings.sortingEnabled}, フィルター=${currentSettings.filterEnabled}, エクスポート=${currentSettings.exportEnabled}`,
-      "content",
-    );
 
     if (!currentEnabled) {
       // 拡張機能が無効化された場合は全て削除
