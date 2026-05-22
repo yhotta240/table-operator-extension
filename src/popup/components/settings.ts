@@ -99,6 +99,18 @@ export function setupSettingsTab(
   setupSiteRules(settings, onUpdate);
 }
 
+function matchesPatternForUrl(pattern: string, url: string): boolean {
+  let target: string;
+  try {
+    const u = new URL(url);
+    target = pattern.includes("://") ? u.origin + u.pathname : u.hostname;
+  } catch {
+    target = url;
+  }
+  const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*");
+  return new RegExp(`^${escaped}$`, "i").test(target);
+}
+
 function setupSiteRules(
   settings: Settings,
   onUpdate: (
@@ -115,6 +127,12 @@ function setupSiteRules(
   if (!input || !clearBtn || !addBtn || !list) return;
 
   const siteRules: SiteRule[] = [...(settings.siteRules ?? [])];
+  let currentTabUrl: string | null = null;
+
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    currentTabUrl = tabs[0]?.url ?? null;
+    if (currentTabUrl) renderList();
+  });
 
   const featureKeys: { key: keyof SiteRule; label: string }[] = [
     { key: "columnSelectionEnabled", label: "列選択" },
@@ -126,9 +144,21 @@ function setupSiteRules(
   function renderList(): void {
     if (!list) return;
     list.innerHTML = "";
-    siteRules.forEach((rule, i) => {
+    const sorted = siteRules
+      .map((rule, i) => ({ rule, originalIndex: i }))
+      .sort((a, b) => {
+        const aActive =
+          currentTabUrl !== null && matchesPatternForUrl(a.rule.pattern, currentTabUrl);
+        const bActive =
+          currentTabUrl !== null && matchesPatternForUrl(b.rule.pattern, currentTabUrl);
+        return (bActive ? 1 : 0) - (aActive ? 1 : 0);
+      });
+
+    for (const { rule, originalIndex } of sorted) {
+      const isActive = currentTabUrl !== null && matchesPatternForUrl(rule.pattern, currentTabUrl);
+
       const li = document.createElement("li");
-      li.className = "list-group-item px-3 py-2";
+      li.className = `list-group-item px-3 py-2${isActive ? " list-group-item-primary" : ""}`;
 
       const header = document.createElement("div");
       header.className = "d-flex justify-content-between align-items-center mb-1";
@@ -140,11 +170,17 @@ function setupSiteRules(
       const deleteBtn = document.createElement("button");
       deleteBtn.type = "button";
       deleteBtn.className = "btn btn-sm text-muted p-0 site-rule-delete lh-1";
-      deleteBtn.dataset.index = String(i);
+      deleteBtn.dataset.index = String(originalIndex);
       deleteBtn.setAttribute("aria-label", "削除");
       deleteBtn.textContent = "×";
 
       header.appendChild(patternSpan);
+      if (isActive) {
+        const badge = document.createElement("span");
+        badge.className = "badge text-bg-primary fw-normal ms-2 flex-shrink-0";
+        badge.textContent = "適用中";
+        header.appendChild(badge);
+      }
       header.appendChild(deleteBtn);
 
       const checks = document.createElement("div");
@@ -157,8 +193,8 @@ function setupSiteRules(
         const cb = document.createElement("input");
         cb.className = "form-check-input site-rule-cb";
         cb.type = "checkbox";
-        cb.id = `sr-${key}-${i}`;
-        cb.dataset.index = String(i);
+        cb.id = `sr-${key}-${originalIndex}`;
+        cb.dataset.index = String(originalIndex);
         cb.dataset.key = key;
         cb.checked = rule[key] as boolean;
 
@@ -175,7 +211,7 @@ function setupSiteRules(
       li.appendChild(header);
       li.appendChild(checks);
       list.appendChild(li);
-    });
+    }
   }
 
   renderList();
