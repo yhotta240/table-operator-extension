@@ -174,13 +174,14 @@
         <div class="input-group input-group-sm mb-2">
           <div class="flex-grow-1 position-relative">
             <input type="text" class="form-control form-control-sm pe-4" id="site-rule-input"
-              placeholder="例: example.com, 192.168.1.*">
+              placeholder="例: https://example.com, https://*.example.com">
             <button type="button"
               class="btn btn-sm position-absolute top-50 end-0 translate-middle-y px-2 py-0 border-0 text-muted lh-1"
               id="site-rule-clear" style="display:none;" aria-label="クリア">&times;</button>
           </div>
           <button type="button" class="btn btn-sm btn-outline-secondary" id="site-rule-add">追加</button>
         </div>
+        <div id="site-rule-error" class="text-danger small mb-2" style="display:none;"></div>
         <ul class="list-group mb-0" id="site-rule-list"></ul>
       </div>
     </div>
