@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Table Operator",
+  "name": "Table Operator - 列の並び替え・フィルター・CSV出力・列選択",
   "short_name": "Table Operator",
   "version": "0.2.0",
   "description": "Web ページ上の表を並び替え・フィルター・CSV出力できるようにします",
