@@ -5,9 +5,12 @@
   "version": "0.0.1",
   "description": "Web ページ上の表を並び替え・フィルター・CSV出力できるようにします",
   "icons": {
-    "48": "icons/icon.png"
+    "128": "icons/icon128.png"
   },
-  "permissions": ["storage", "tabs"],
+  "permissions": [
+    "storage",
+    "tabs"
+  ],
   "action": {
     "default_popup": "popup.html"
   },
@@ -17,8 +20,13 @@
   },
   "content_scripts": [
     {
-      "matches": ["http://127.0.0.1/*", "http://localhost/*"],
-      "js": ["content.js"]
+      "matches": [
+        "http://127.0.0.1/*",
+        "http://localhost/*"
+      ],
+      "js": [
+        "content.js"
+      ]
     }
   ]
 }
