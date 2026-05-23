@@ -53,6 +53,21 @@ let isObserverActive = false;
 let observer: MutationObserver | null = null;
 
 /**
+ * データテーブルとして操作対象にすべきか判定する
+ * レイアウトテーブル・アプリ管理グリッド・ヘッダーなしテーブルは対象外とする
+ */
+function isDataTable(table: HTMLTableElement): boolean {
+  const role = table.getAttribute("role");
+  // role="presentation" / "none" はレイアウト用テーブル
+  if (role === "presentation" || role === "none") return false;
+  // role="grid" / "treegrid" はアプリが独自管理するグリッド（Gmail等）
+  if (role === "grid" || role === "treegrid") return false;
+  // <th> を持たないテーブルはデータテーブルではない
+  if (!table.querySelector("th")) return false;
+  return true;
+}
+
+/**
    ページ全体のテーブルをスキャンし、必要に応じて TableManager を作成します。
  */
 function scanAndInitTables(): void {
@@ -81,6 +96,11 @@ function scanAndInitTables(): void {
       } else {
         continue;
       }
+    }
+
+    // レイアウトテーブル・アプリ管理グリッド・ヘッダーなしテーブルはスキップ
+    if (!isDataTable(table)) {
+      continue;
     }
 
     // テーブルとして妥当なサイズか簡易チェック（行・列が最低1つ以上あるもの）
