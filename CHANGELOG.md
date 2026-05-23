@@ -2,7 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1] - 2026-05-23
+
+### Changed
+
+* アイコンアセットをサイズ別構成に変更
+
+### Docs
+
+* 概要ドキュメントの表現を簡潔化
+* READMEおよび関連ドキュメントを更新
+
+### Chore
+
+* マニフェストのツール名およびメタデータを更新
+
 ## [0.2.0] - 2026-05-22
+
 ### Added
 
 * ポップアップで現在のタブに「適用中」バッジを表示
