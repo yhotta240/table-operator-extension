@@ -1,3 +1,5 @@
+import { buildTableCellMatrix, getLogicalColIndex } from "../utils/table";
+
 export class TableSelector {
   private table: HTMLTableElement;
   private active = false;
@@ -46,7 +48,9 @@ export class TableSelector {
     if (event.shiftKey) {
       const cell = target.closest("td, th") as HTMLTableCellElement | null;
       if (cell && this.table.contains(cell)) {
-        const cellIndex = cell.cellIndex;
+        // 論理カラムインデックスを取得
+        const logicalIndex = getLogicalColIndex(this.table, cell);
+        if (logicalIndex === null) return;
 
         // 既存の選択状態をクリア
         this.clearSelection();
@@ -56,11 +60,10 @@ export class TableSelector {
 
         // 対象列のすべてのセルを選択状態にする
         const rows = Array.from(this.table.rows);
-        for (const row of rows) {
-          const c = row.cells[cellIndex];
-          if (c) {
-            c.classList.add("to-selected-cell");
-          }
+        const matrix = buildTableCellMatrix(this.table);
+        for (let r = 0; r < rows.length; r++) {
+          const c = matrix[r] ? matrix[r][logicalIndex] : undefined;
+          if (c) c.classList.add("to-selected-cell");
         }
       }
     } else {

@@ -1,3 +1,5 @@
+import { buildTableCellMatrix, getLogicalColIndex } from "../utils/table";
+
 export class TableFilter {
   private table: HTMLTableElement;
   private active = false;
@@ -59,9 +61,13 @@ export class TableFilter {
         </svg>
       `;
 
+      // 論理列インデックスを計算してハンドラに閉じ込める
+      const logicalIndex = getLogicalColIndex(this.table, th as HTMLTableCellElement);
+
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
-        this.togglePopover(btn, th.cellIndex);
+        if (logicalIndex === null) return;
+        this.togglePopover(btn, logicalIndex);
       });
 
       container.appendChild(btn);
@@ -274,12 +280,15 @@ export class TableFilter {
   private getColumnUniqueValues(colIndex: number): string[] {
     const values = new Set<string>();
     const tbody = this.table.querySelector("tbody") || this.table;
-    const rows = Array.from(tbody.querySelectorAll("tr")).filter((row) => {
-      return !row.querySelector("th");
-    });
+    const dataRows = Array.from((tbody as HTMLTableElement).querySelectorAll("tr")).filter(
+      (row) => !row.querySelector("th"),
+    );
+    const fullRows = Array.from(this.table.rows);
+    const matrix = buildTableCellMatrix(this.table);
 
-    for (const row of rows) {
-      const cell = row.cells[colIndex];
+    for (const row of dataRows) {
+      const rIdx = fullRows.indexOf(row);
+      const cell = matrix[rIdx] ? matrix[rIdx][colIndex] : undefined;
       const txt = cell ? cell.innerText.trim() : "";
       values.add(txt);
     }
@@ -292,16 +301,19 @@ export class TableFilter {
    */
   private applyFiltersToTable(): void {
     const tbody = this.table.querySelector("tbody") || this.table;
-    const rows = Array.from(tbody.querySelectorAll("tr")).filter((row) => {
-      return !row.querySelector("th");
-    });
+    const dataRows = Array.from((tbody as HTMLTableElement).querySelectorAll("tr")).filter(
+      (row) => !row.querySelector("th"),
+    );
+    const fullRows = Array.from(this.table.rows);
+    const matrix = buildTableCellMatrix(this.table);
 
-    for (const row of rows) {
+    for (const row of dataRows) {
       let isVisible = true;
 
       // すべての有効なフィルター条件に合致するか検査
       for (const [colIndex, allowedValues] of this.activeFilters.entries()) {
-        const cell = row.cells[colIndex];
+        const rIdx = fullRows.indexOf(row);
+        const cell = matrix[rIdx] ? matrix[rIdx][colIndex] : undefined;
         const val = cell ? cell.innerText.trim() : "";
         if (!allowedValues.has(val)) {
           isVisible = false;
@@ -324,11 +336,13 @@ export class TableFilter {
     this.activeFilters.delete(colIndex);
 
     // ボタンのハイライトを除去
-    const ths = this.table.querySelectorAll("th");
-    const th = ths[colIndex];
-    if (th) {
-      const btn = th.querySelector(".to-filter-button");
-      btn?.classList.remove("to-filter-active");
+    const ths = Array.from(this.table.querySelectorAll("th")) as HTMLTableCellElement[];
+    for (const th of ths) {
+      const li = getLogicalColIndex(this.table, th);
+      if (li === colIndex) {
+        const btn = th.querySelector(".to-filter-button");
+        btn?.classList.remove("to-filter-active");
+      }
     }
 
     this.applyFiltersToTable();

@@ -1,4 +1,5 @@
 import type { Settings } from "../settings";
+import { buildTableCellMatrix } from "../utils/table";
 
 export class TableExporter {
   private table: HTMLTableElement;
@@ -224,60 +225,52 @@ export class TableExporter {
 
     // 全ての行を取得
     const rows = Array.from(this.table.rows);
+    const matrix = buildTableCellMatrix(this.table) as (HTMLTableCellElement | undefined)[][];
+    const fullRows = rows;
+    const numCols = matrix.reduce((m: number, r) => Math.max(m, r ? r.length : 0), 0);
     if (rows.length === 0) return;
 
     // どの列が選択されているかインデックスを取得 (range === 'selected'用)
     const selectedColIndices: number[] = [];
     if (range === "selected") {
-      const firstRow = rows[0];
-      if (firstRow) {
-        for (let i = 0; i < firstRow.cells.length; i++) {
-          const hasSelectedCells = Array.from(this.table.rows).some((r) =>
-            r.cells[i]?.classList.contains("to-selected-cell"),
-          );
-          if (hasSelectedCells) {
-            selectedColIndices.push(i);
+      for (let c = 0; c < numCols; c++) {
+        let has = false;
+        for (let r = 0; r < fullRows.length; r++) {
+          const cell = matrix[r] ? matrix[r][c] : undefined;
+          if (cell?.classList.contains("to-selected-cell")) {
+            has = true;
+            break;
           }
         }
+        if (has) selectedColIndices.push(c);
       }
     }
 
     const outputRows: string[] = [];
 
-    for (const row of rows) {
+    for (let r = 0; r < fullRows.length; r++) {
+      const row = fullRows[r];
       const isHeader = !!row.querySelector("th");
 
-      // 'visible' モードで、非表示のデータ行は除外（ヘッダー行は常に含める）
-      if (range === "visible" && !isHeader && row.classList.contains("to-row-filtered")) {
-        continue;
-      }
+      if (range === "visible" && !isHeader && row.classList.contains("to-row-filtered")) continue;
 
-      // セルデータを抽出
-      let cells = Array.from(row.cells);
+      const cellsForRow: string[] = [];
+      for (let c = 0; c < numCols; c++) {
+        if (range === "selected" && !selectedColIndices.includes(c)) continue;
+        const cell = matrix[r] ? matrix[r][c] : undefined;
+        const text = cell ? cell.innerText.replace(/[\r\n\t]/g, " ").trim() : "";
 
-      // 'selected' モードなら、選択された列インデックスのセルのみに絞り込む
-      if (range === "selected") {
-        cells = cells.filter((_, idx) => selectedColIndices.includes(idx));
-      }
-
-      // 該当行にセルがない場合はスキップ
-      if (cells.length === 0) continue;
-
-      const formattedCells = cells.map((cell) => {
-        let text = cell.innerText.replace(/[\r\n\t]/g, " ").trim();
-
-        // CSV/TSV用にダブルクォーテーションのエスケープ処理
-        // ダブルクォートが含まれる、または区切り文字が含まれる場合はダブルクォートで包む
-        const containsQuote = text.includes('"');
-        const containsSeparator = text.includes(separator);
-
-        if (containsQuote || containsSeparator || text.includes(",") || text.includes("\n")) {
-          text = `"${text.replace(/"/g, '""')}"`;
+        let out = text;
+        const containsQuote = out.includes('"');
+        const containsSeparator = out.includes(separator);
+        if (containsQuote || containsSeparator || out.includes(",") || out.includes("\n")) {
+          out = `"${out.replace(/"/g, '""')}"`;
         }
-        return text;
-      });
+        cellsForRow.push(out);
+      }
 
-      outputRows.push(formattedCells.join(separator));
+      if (cellsForRow.length === 0) continue;
+      outputRows.push(cellsForRow.join(separator));
     }
 
     const fileContent = outputRows.join("\n");

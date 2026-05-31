@@ -1,3 +1,5 @@
+import { getLogicalColIndex, buildRowGroupsForSort } from "../utils/table";
+
 export class TableSorter {
   private table: HTMLTableElement;
   private active = false;
@@ -58,10 +60,12 @@ export class TableSorter {
     // Shiftキーが押されている場合は、列選択を優先するためソートは無視する
     if (event.shiftKey) return;
 
-    const th = sortableHeader.closest("th");
+    const th = sortableHeader.closest("th") as HTMLTableCellElement | null;
     if (!th) return;
 
-    const cellIndex = th.cellIndex;
+    const logicalIndex = getLogicalColIndex(this.table, th);
+    if (logicalIndex === null) return;
+    const cellIndex = logicalIndex;
     let dir: "asc" | "desc" = "asc";
 
     if (this.currentSortCol === cellIndex) {
@@ -83,20 +87,14 @@ export class TableSorter {
 
     if (rows.length === 0) return;
 
-    // ソート実行
-    rows.sort((rowA, rowB) => {
-      const cellA = rowA.cells[colIndex];
-      const cellB = rowB.cells[colIndex];
-
-      const valA = cellA ? cellA.innerText.trim() : "";
-      const valB = cellB ? cellB.innerText.trim() : "";
-
-      return this.compareValues(valA, valB, dir);
+    // ソート実行（rowspan ブロックを考慮したグルーピングをユーティリティで生成）
+    const groups = buildRowGroupsForSort(this.table, tbody as HTMLTableElement, colIndex);
+    groups.sort((a, b) => {
+      const cmp = this.compareValues(a.key, b.key, dir);
+      return cmp !== 0 ? cmp : a.origIndex - b.origIndex;
     });
-
-    // ソート結果をDOMに再挿入（再アペンドすることで並びが順次反映される）
-    for (const row of rows) {
-      tbody.appendChild(row);
+    for (const g of groups) {
+      for (const row of g.rows) tbody.appendChild(row);
     }
 
     // ソート状態を更新
@@ -104,16 +102,17 @@ export class TableSorter {
     this.currentSortDir = dir;
 
     // インジケータ表示の更新
-    const ths = this.table.querySelectorAll("th");
-    for (const th of Array.from(ths)) {
+    // インジケータ表示の更新（論理列インデックスで比較）
+    const ths = Array.from(this.table.querySelectorAll("th")) as HTMLTableCellElement[];
+    for (const th of ths) {
       const ind = th.querySelector(".to-sort-indicator");
-      if (ind) {
-        if (th.cellIndex === colIndex) {
-          ind.textContent = dir === "asc" ? "▲" : "▼";
-        } else {
-          ind.textContent = "";
-        }
+      if (!ind) continue;
+      const li = getLogicalColIndex(this.table, th);
+      if (li === null) {
+        ind.textContent = "";
+        continue;
       }
+      ind.textContent = li === colIndex ? (dir === "asc" ? "▲" : "▼") : "";
     }
   }
 
