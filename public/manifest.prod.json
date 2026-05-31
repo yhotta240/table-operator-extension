@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Table Operator - 列の並び替え・フィルター・CSV出力・列選択",
   "short_name": "Table Operator",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Web ページ上の表を並び替え・フィルター・CSV出力できるようにします",
   "icons": {
     "16": "icons/icon16.png",

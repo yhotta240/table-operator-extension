@@ -1,4 +1,4 @@
-import { getLogicalColIndex, buildRowGroupsForSort } from "../utils/table";
+import { buildRowGroupsForSort, getLogicalColIndex } from "../utils/table";
 
 export class TableSorter {
   private table: HTMLTableElement;
