@@ -25,14 +25,21 @@ export const DEFAULT_SETTINGS: Settings = {
   defaultExportFormat: "csv",
   siteRules: [
     {
-      pattern: "http://localhost/*",
+      pattern: "http://localhost*/*",
       columnSelectionEnabled: false,
       sortingEnabled: false,
       filterEnabled: false,
       exportEnabled: false,
     },
     {
-      pattern: "http://192.168.0.*/*",
+      pattern: "http://127.0.0.1*/*",
+      columnSelectionEnabled: false,
+      sortingEnabled: false,
+      filterEnabled: false,
+      exportEnabled: false,
+    },
+    {
+      pattern: "http://192.168.*/*",
       columnSelectionEnabled: false,
       sortingEnabled: false,
       filterEnabled: false,
