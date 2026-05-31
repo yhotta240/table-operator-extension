@@ -1,4 +1,4 @@
-import { buildTableCellMatrix, getLogicalColIndex } from "../utils/table";
+import { getLogicalColIndex, buildRowGroupsForSort } from "../utils/table";
 
 export class TableSorter {
   private table: HTMLTableElement;
@@ -87,26 +87,14 @@ export class TableSorter {
 
     if (rows.length === 0) return;
 
-    // ソート実行
-    // rowspan/colspan を考慮するためマトリクスを構築して比較する
-    const matrix = buildTableCellMatrix(this.table);
-    const allRows = Array.from((tbody as HTMLTableElement).rows);
-
-    rows.sort((rowA, rowB) => {
-      const idxA = allRows.indexOf(rowA);
-      const idxB = allRows.indexOf(rowB);
-      const cellA = matrix[idxA] ? matrix[idxA][colIndex] : undefined;
-      const cellB = matrix[idxB] ? matrix[idxB][colIndex] : undefined;
-
-      const valA = cellA ? cellA.innerText.trim() : "";
-      const valB = cellB ? cellB.innerText.trim() : "";
-
-      return this.compareValues(valA, valB, dir);
+    // ソート実行（rowspan ブロックを考慮したグルーピングをユーティリティで生成）
+    const groups = buildRowGroupsForSort(this.table, tbody as HTMLTableElement, colIndex);
+    groups.sort((a, b) => {
+      const cmp = this.compareValues(a.key, b.key, dir);
+      return cmp !== 0 ? cmp : a.origIndex - b.origIndex;
     });
-
-    // ソート結果をDOMに再挿入（再アペンドすることで並びが順次反映される）
-    for (const row of rows) {
-      tbody.appendChild(row);
+    for (const g of groups) {
+      for (const row of g.rows) tbody.appendChild(row);
     }
 
     // ソート状態を更新

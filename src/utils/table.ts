@@ -54,3 +54,42 @@ export function getLogicalColIndex(
   }
   return null;
 }
+
+/**
+ * 指定テーブルの tbody（または table 自体）内データ行に対して、
+ * rowspan を考慮した「行グループ」を作成する。
+ * 各グループは連続する行ブロックを持ち、ソート時はこのグループ単位で並べ替える。
+ */
+export function buildRowGroupsForSort(
+  table: HTMLTableElement,
+  container: HTMLTableSectionElement | HTMLTableElement,
+  colIndex: number,
+): { rows: HTMLTableRowElement[]; key: string; origIndex: number }[] {
+  const matrix = buildTableCellMatrix(table);
+  const tableRows = Array.from(table.rows);
+  const dataRows = Array.from(container.querySelectorAll("tr")).filter(
+    (r) => !r.querySelector("th"),
+  );
+
+  const groups: { rows: HTMLTableRowElement[]; key: string; origIndex: number }[] = [];
+
+  const getBlockLen = (row: HTMLTableRowElement) =>
+    Math.max(1, ...Array.from(row.cells).map((c) => (c as HTMLTableCellElement).rowSpan || 1));
+
+  const cellTextAt = (row: HTMLTableRowElement) => {
+    const idx = tableRows.indexOf(row);
+    const cell = matrix[idx] ? matrix[idx][colIndex] : undefined;
+    return cell ? cell.innerText.trim() : "";
+  };
+
+  let i = 0;
+  while (i < dataRows.length) {
+    const startRow = dataRows[i] as HTMLTableRowElement;
+    const blockLen = getBlockLen(startRow);
+    const blockRows = dataRows.slice(i, i + blockLen) as HTMLTableRowElement[];
+    groups.push({ rows: blockRows, key: cellTextAt(startRow), origIndex: i });
+    i += blockLen;
+  }
+
+  return groups;
+}
