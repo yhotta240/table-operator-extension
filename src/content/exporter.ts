@@ -1,4 +1,5 @@
 import type { Settings } from "../settings";
+import { logError, logInfo } from "../utils/logger";
 import { buildTableCellMatrix } from "../utils/table";
 
 export class TableExporter {
@@ -222,75 +223,88 @@ export class TableExporter {
   ): void {
     const separator = format === "csv" ? "," : "\t";
     const extension = format === "csv" ? ".csv" : ".txt";
+    const downloadName = `${filename}${extension}`;
 
-    // 全ての行を取得
-    const rows = Array.from(this.table.rows);
-    const matrix = buildTableCellMatrix(this.table) as (HTMLTableCellElement | undefined)[][];
-    const fullRows = rows;
-    const numCols = matrix.reduce((m: number, r) => Math.max(m, r ? r.length : 0), 0);
-    if (rows.length === 0) return;
+    try {
+      // 全ての行を取得
+      const rows = Array.from(this.table.rows);
+      const matrix = buildTableCellMatrix(this.table) as (HTMLTableCellElement | undefined)[][];
+      const fullRows = rows;
+      const numCols = matrix.reduce((m: number, r) => Math.max(m, r ? r.length : 0), 0);
+      if (rows.length === 0) return;
 
-    // どの列が選択されているかインデックスを取得 (range === 'selected'用)
-    const selectedColIndices: number[] = [];
-    if (range === "selected") {
-      for (let c = 0; c < numCols; c++) {
-        let has = false;
-        for (let r = 0; r < fullRows.length; r++) {
-          const cell = matrix[r] ? matrix[r][c] : undefined;
-          if (cell?.classList.contains("to-selected-cell")) {
-            has = true;
-            break;
+      // どの列が選択されているかインデックスを取得 (range === 'selected'用)
+      const selectedColIndices: number[] = [];
+      if (range === "selected") {
+        for (let c = 0; c < numCols; c++) {
+          let has = false;
+          for (let r = 0; r < fullRows.length; r++) {
+            const cell = matrix[r] ? matrix[r][c] : undefined;
+            if (cell?.classList.contains("to-selected-cell")) {
+              has = true;
+              break;
+            }
           }
+          if (has) selectedColIndices.push(c);
         }
-        if (has) selectedColIndices.push(c);
-      }
-    }
-
-    const outputRows: string[] = [];
-
-    for (let r = 0; r < fullRows.length; r++) {
-      const row = fullRows[r];
-      const isHeader = !!row.querySelector("th");
-
-      if (range === "visible" && !isHeader && row.classList.contains("to-row-filtered")) continue;
-
-      const cellsForRow: string[] = [];
-      for (let c = 0; c < numCols; c++) {
-        if (range === "selected" && !selectedColIndices.includes(c)) continue;
-        const cell = matrix[r] ? matrix[r][c] : undefined;
-        const text = cell ? cell.innerText.replace(/[\r\n\t]/g, " ").trim() : "";
-
-        let out = text;
-        const containsQuote = out.includes('"');
-        const containsSeparator = out.includes(separator);
-        if (containsQuote || containsSeparator || out.includes(",") || out.includes("\n")) {
-          out = `"${out.replace(/"/g, '""')}"`;
-        }
-        cellsForRow.push(out);
+        if (selectedColIndices.length === 0) return;
       }
 
-      if (cellsForRow.length === 0) continue;
-      outputRows.push(cellsForRow.join(separator));
+      const outputRows: string[] = [];
+
+      for (let r = 0; r < fullRows.length; r++) {
+        const row = fullRows[r];
+        const isHeader = !!row.querySelector("th");
+
+        if (range === "visible" && !isHeader && row.classList.contains("to-row-filtered")) continue;
+
+        const cellsForRow: string[] = [];
+        for (let c = 0; c < numCols; c++) {
+          if (range === "selected" && !selectedColIndices.includes(c)) continue;
+          const cell = matrix[r] ? matrix[r][c] : undefined;
+          const text = cell ? cell.innerText.replace(/[\r\n\t]/g, " ").trim() : "";
+
+          let out = text;
+          const containsQuote = out.includes('"');
+          const containsSeparator = out.includes(separator);
+          if (containsQuote || containsSeparator || out.includes(",") || out.includes("\n")) {
+            out = `"${out.replace(/"/g, '""')}"`;
+          }
+          cellsForRow.push(out);
+        }
+
+        if (cellsForRow.length === 0) continue;
+        outputRows.push(cellsForRow.join(separator));
+      }
+
+      if (outputRows.length === 0) return;
+
+      const fileContent = outputRows.join("\n");
+
+      // Excel等での文字化けを防ぐため、BOMを追加 (UTF-8 BOM: \uFEFF)
+      const bom = new Uint8Array([0xef, 0xbb, 0xbf]);
+      const blob = new Blob([bom, fileContent], { type: `text/${format};charset=utf-8;` });
+
+      // ダウンロード実行用のa要素を作成してクリック
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      try {
+        link.setAttribute("href", url);
+        link.setAttribute("download", downloadName);
+        link.style.visibility = "hidden";
+        document.body.appendChild(link);
+        link.click();
+      } finally {
+        if (link.parentNode) {
+          link.parentNode.removeChild(link);
+        }
+        URL.revokeObjectURL(url);
+      }
+
+      void logInfo(`${downloadName} をダウンロードしました`, "content");
+    } catch (error) {
+      void logError(`${downloadName} のエクスポートに失敗しました`, "content", error);
     }
-
-    const fileContent = outputRows.join("\n");
-
-    // Excel等での文字化けを防ぐため、BOMを追加 (UTF-8 BOM: \uFEFF)
-    const bom = new Uint8Array([0xef, 0xbb, 0xbf]);
-    const blob = new Blob([bom, fileContent], { type: `text/${format};charset=utf-8;` });
-
-    // ダウンロード実行用のa要素を作成してクリック
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", `${filename}${extension}`);
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-
-    console.log(`Table Operator: ${filename}${extension} をダウンロードしました。`);
   }
 
   /**
