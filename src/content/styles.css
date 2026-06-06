@@ -2,6 +2,7 @@
 
 .to-table-wrapper {
   position: relative !important;
+  width: fit-content !important;
 }
 
 /* 選択された列のセルハイライト */
@@ -105,7 +106,7 @@ td:hover .to-filter-button {
 .to-export-button {
   position: absolute !important;
   top: 6px !important;
-  right: 6px !important;
+  right: 20px !important;
   z-index: 999 !important;
   width: 22px !important;
   height: 22px !important;
