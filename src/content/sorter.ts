@@ -57,8 +57,8 @@ export class TableSorter {
     const sortableHeader = target.closest(".to-sortable-header");
     if (!sortableHeader || !this.table.contains(sortableHeader)) return;
 
-    // Shiftキーが押されている場合は、列選択を優先するためソートは無視する
-    if (event.shiftKey) return;
+    // Ctrl+クリックは列選択に使うため、ソートしない
+    if (event.ctrlKey) return;
 
     const th = sortableHeader.closest("th") as HTMLTableCellElement | null;
     if (!th) return;

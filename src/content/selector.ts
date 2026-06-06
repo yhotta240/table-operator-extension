@@ -41,46 +41,36 @@ export class TableSelector {
     const target = event.target as HTMLElement;
 
     // フィルターボタン、エクスポートボタン、ポップオーバー内部は選択トリガーから除外
-    if (target.closest(".to-filter-button, .to-export-button, .to-popover")) {
+    if (this.isControlElement(target)) {
       return;
     }
 
-    if (event.shiftKey) {
-      const cell = target.closest("td, th") as HTMLTableCellElement | null;
-      if (cell && this.table.contains(cell)) {
-        // 論理カラムインデックスを取得
-        const logicalIndex = getLogicalColIndex(this.table, cell);
-        if (logicalIndex === null) return;
-
-        // 既存の選択状態をクリア
-        this.clearSelection();
-
-        // テーブルに列選択中クラスを付与
-        this.table.classList.add("to-column-selecting");
-
-        // 対象列のすべてのセルを選択状態にする
-        const rows = Array.from(this.table.rows);
-        const matrix = buildTableCellMatrix(this.table);
-        for (let r = 0; r < rows.length; r++) {
-          const c = matrix[r] ? matrix[r][logicalIndex] : undefined;
-          if (c) c.classList.add("to-selected-cell");
-        }
-      }
-    } else {
-      // Shiftなしのクリック時は選択状態を解除
+    if (!event.ctrlKey) {
+      // Ctrlなしのクリック時は選択状態を解除
       this.clearSelection();
+      return;
     }
+
+    const cell = this.getTableCell(target);
+    if (cell) this.selectColumn(cell);
   }
 
   /**
    * ドキュメント全体での mousedown イベントハンドリング（テーブル外クリック時の選択解除）
    */
   private handleDocumentMousedown(event: MouseEvent): void {
-    if (event.shiftKey) return;
-
     const target = event.target as HTMLElement;
-    // テーブル外部かつポップオーバー外部をクリックした場合に選択をクリア
-    if (!this.table.contains(target) && !target.closest(".to-popover")) {
+    if (this.isControlElement(target)) return;
+
+    if (event.ctrlKey) {
+      if (!this.getTableCell(target)) {
+        this.clearSelection();
+      }
+      return;
+    }
+
+    // テーブル外部かつ関連操作UI外部をクリックした場合に選択をクリア
+    if (!this.table.contains(target)) {
       this.clearSelection();
     }
   }
@@ -148,9 +138,30 @@ export class TableSelector {
    */
   private clearSelection(): void {
     this.table.classList.remove("to-column-selecting");
-    const cells = this.table.querySelectorAll(".to-selected-cell");
-    for (const cell of Array.from(cells)) {
+    for (const cell of Array.from(this.table.querySelectorAll(".to-selected-cell"))) {
       cell.classList.remove("to-selected-cell");
     }
+  }
+
+  private selectColumn(cell: HTMLTableCellElement): void {
+    const logicalIndex = getLogicalColIndex(this.table, cell);
+    if (logicalIndex === null) return;
+
+    this.clearSelection();
+    this.table.classList.add("to-column-selecting");
+
+    const matrix = buildTableCellMatrix(this.table);
+    for (const row of matrix) {
+      row[logicalIndex]?.classList.add("to-selected-cell");
+    }
+  }
+
+  private getTableCell(target: HTMLElement): HTMLTableCellElement | null {
+    const cell = target.closest("td, th") as HTMLTableCellElement | null;
+    return cell && this.table.contains(cell) ? cell : null;
+  }
+
+  private isControlElement(target: HTMLElement): boolean {
+    return !!target.closest(".to-filter-button, .to-export-button, .to-popover");
   }
 }
