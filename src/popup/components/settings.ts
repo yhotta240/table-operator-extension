@@ -14,9 +14,6 @@ export function setupSettingsTab(
   const sortingToggle = document.getElementById("setting-sorting") as HTMLInputElement | null;
   const filterToggle = document.getElementById("setting-filter") as HTMLInputElement | null;
   const exportToggle = document.getElementById("setting-export") as HTMLInputElement | null;
-  const exportFilenameInput = document.getElementById(
-    "setting-export-filename",
-  ) as HTMLInputElement | null;
   const exportFormatSelect = document.getElementById(
     "setting-export-format",
   ) as HTMLSelectElement | null;
@@ -33,9 +30,6 @@ export function setupSettingsTab(
   }
   if (exportToggle) {
     exportToggle.checked = settings.exportEnabled;
-  }
-  if (exportFilenameInput) {
-    exportFilenameInput.value = settings.defaultExportFileName || "";
   }
   if (exportFormatSelect) {
     exportFormatSelect.value = settings.defaultExportFormat || "csv";
@@ -75,15 +69,6 @@ export function setupSettingsTab(
       { exportEnabled: checked },
       `エクスポート機能を${checked ? "有効" : "無効"}にしました`,
       "エクスポート設定の保存に失敗しました",
-    );
-  });
-
-  exportFilenameInput?.addEventListener("change", (e) => {
-    const value = (e.target as HTMLInputElement).value.trim();
-    onUpdate(
-      { defaultExportFileName: value },
-      `デフォルトのファイル名を「${value}」に変更しました`,
-      "ファイル名設定の保存に失敗しました",
     );
   });
 

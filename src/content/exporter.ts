@@ -104,7 +104,7 @@ export class TableExporter {
     labelName.textContent = "保存ファイル名";
     const filenameInput = document.createElement("input");
     filenameInput.type = "text";
-    filenameInput.value = this.settings.defaultExportFileName || "table-data";
+    filenameInput.value = this.getDefaultExportFileName();
     filenameInput.placeholder = "ファイル名を入力";
 
     // フォーマット選択
@@ -305,6 +305,16 @@ export class TableExporter {
     } catch (error) {
       void logError(`${downloadName} のエクスポートに失敗しました`, "content", error);
     }
+  }
+
+  private getDefaultExportFileName(): string {
+    const caption = this.table.caption?.innerText.trim();
+    if (caption) return caption;
+
+    const title = document.title.trim();
+    if (title) return title;
+
+    return "table-data";
   }
 
   /**

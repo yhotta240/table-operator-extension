@@ -3,7 +3,11 @@ import { DEFAULT_SETTINGS, type Settings } from "../settings";
 export async function getSettings(): Promise<Settings> {
   const data = await getStorage<{ settings?: Settings }>("settings");
   if (!data.settings) return DEFAULT_SETTINGS;
-  return { ...DEFAULT_SETTINGS, ...data.settings };
+  const { defaultExportFileName: _legacyDefaultExportFileName, ...settings } =
+    data.settings as Settings & {
+      defaultExportFileName?: string;
+    };
+  return { ...DEFAULT_SETTINGS, ...settings };
 }
 
 export async function isEnabled(): Promise<boolean> {

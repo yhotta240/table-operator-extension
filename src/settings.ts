@@ -11,7 +11,6 @@ export type Settings = {
   sortingEnabled: boolean;
   filterEnabled: boolean;
   exportEnabled: boolean;
-  defaultExportFileName: string;
   defaultExportFormat: "csv" | "tsv";
   siteRules: SiteRule[];
 };
@@ -21,7 +20,6 @@ export const DEFAULT_SETTINGS: Settings = {
   sortingEnabled: true,
   filterEnabled: true,
   exportEnabled: true,
-  defaultExportFileName: "table-data",
   defaultExportFormat: "csv",
   siteRules: [
     {
