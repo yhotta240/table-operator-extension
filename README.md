@@ -14,7 +14,7 @@ Web ページ上の表を簡単に操作できるようにする Chrome 拡張�
 
 ### Chrome Web Store からインストール
 
-準備中...
+[Table Operator - Chrome ウェブストア](https://chrome.google.com/webstore/detail/gmnnghchpkkmjodminbojejkpplopipj)
 
 ### 手動インストール
 
@@ -49,7 +49,6 @@ Web ページ上の表を簡単に操作できるようにする Chrome 拡張�
    - 「デベロッパーモード」をオンにする
    - 「パッケージ化されていない拡張機能を読み込む」をクリック
    - `dist/` ディレクトリを選択
-
 
 ## 使い方
 

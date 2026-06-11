@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.4] - 2026-06-12
+
+### Changed
+
+- 列選択を Ctrl 操作に変更
+
+### Fixed
+
+- 列選択モード中にヘッダーも選択できるよう修正
+
+## [0.2.3] - 2026-06-6
+
+### Fixed
+
+- エクスポート初期ファイル名を caption 優先に変更
+- エクスポートの成功失敗ログを追加
+
+### Changed
+
+- テーブルエクスポートボタンの位置を修正
+
 ## [0.2.2] - 2026-05-31
 
 ### Fixed
