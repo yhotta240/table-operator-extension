@@ -29,7 +29,7 @@
   text-decoration: underline dotted !important;
   text-underline-offset: 4px;
   display: inline-block;
-  user-select: none;
+  /* user-select: none; */
 }
 .to-sortable-header:hover {
   text-decoration: underline solid !important;
